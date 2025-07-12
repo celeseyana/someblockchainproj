@@ -1,10 +1,76 @@
-export default function Page2() {
-    return (
-        <div className="section">
-            <div className="container">
-                <h1 className="title is-3">This is Page 2</h1>
-                <p className="subtitle is-6">Add your content here</p>
-            </div>
+import { useEffect, useState } from 'react';
+import { ethers } from 'ethers';
+import FoodSupplyChain from '../artifacts/contracts/FoodSupplyChain.sol/FoodSupplyChain.json';
+const contractAddress = "0x5FbDB2315678afecb367f032d93F642f64180aa3";
+
+export default function CreateItem() {
+  const [contract, setContract] = useState(null);
+  const [name, setName] = useState('');
+  const [origin, setOrigin] = useState('');
+  const [metadataURI, setMetadataURI] = useState('');
+  const [txStatus, setTxStatus] = useState('');
+
+  useEffect(() => {
+    async function initContract() {
+      if (window.ethereum) {
+        try {
+          await window.ethereum.request({ method: 'eth_requestAccounts' });
+          const provider = new ethers.BrowserProvider(window.ethereum);
+          const signer = await provider.getSigner();
+          const foodContract = new ethers.Contract(contractAddress, FoodSupplyChain.abi, signer);
+          setContract(foodContract);
+        } catch (error) {
+          console.error('Error connecting to contract:', error);
+        }
+      }
+    }
+
+    initContract();
+  }, []);
+
+  const handleCreateItem = async (e) => {
+    e.preventDefault();
+    if (!contract) return;
+
+    try {
+      const tx = await contract.createItem(name, origin, metadataURI);
+      setTxStatus('⏳ Transaction sent... Waiting for confirmation');
+      await tx.wait();
+      setTxStatus('✅ Item created successfully!');
+      setName('');
+      setOrigin('');
+      setMetadataURI('');
+    } catch (err) {
+      console.error(err);
+      setTxStatus('❌ Error creating item');
+    }
+  };
+
+  return (
+    <div className="box has-background-dark has-text-light mb-5">
+      <h2 className="title is-5">Create New Food Item</h2>
+      <form onSubmit={handleCreateItem}>
+        <div className="field">
+          <label className="label has-text-white">Name</label>
+          <input className="input" type="text" value={name} onChange={(e) => setName(e.target.value)} required />
         </div>
-    );
+
+        <div className="field">
+          <label className="label has-text-white">Origin</label>
+          <input className="input" type="text" value={origin} onChange={(e) => setOrigin(e.target.value)} required />
+        </div>
+
+        <div className="field">
+          <label className="label has-text-white">Metadata URI (IPFS optional)</label>
+          <input className="input" type="text" value={metadataURI} onChange={(e) => setMetadataURI(e.target.value)} />
+        </div>
+
+        <div className="field mt-4">
+          <button className="button is-link" type="submit">Create Item</button>
+        </div>
+
+        {txStatus && <p className="mt-2">{txStatus}</p>}
+      </form>
+    </div>
+  );
 }
