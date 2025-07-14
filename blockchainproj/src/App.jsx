@@ -15,7 +15,7 @@ export default function App() {
 						<div className="navbar-menu is-active" style={{ width: '100%', justifyContent: 'center' }}>
 							<div className="navbar-start" style={{ display: 'flex', gap: '2rem', justifyContent: 'center', width: '100%' }}>
 								<Link to="/" className="navbar-item has-text-weight-semibold has-text-light">Home</Link>
-								<Link to="/page2" className="navbar-item has-text-weight-semibold has-text-light">Page 2</Link>
+								<Link to="/page2" className="navbar-item has-text-weight-semibold has-text-light">Create Item</Link>
 								<Link to="/page3" className="navbar-item has-text-weight-semibold has-text-light">Page 3</Link>
 								<Link to="/page4" className="navbar-item has-text-weight-semibold has-text-light">Page 4</Link>
 							</div>
