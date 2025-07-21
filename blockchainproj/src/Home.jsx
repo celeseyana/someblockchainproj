@@ -13,7 +13,6 @@ export default function App() {
           </p>
         </div>
 
-        {/* 🔹 STATIC PLACEHOLDER CARDS */}
         <div className="box mb-5">
           <p className="has-text-grey-light">[Timeline Visualization Placeholder]</p>
         </div>
