@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { ethers } from 'ethers';
 import FoodSupplyChain from '../artifacts/contracts/FoodSupplyChain.sol/FoodSupplyChain.json';
-const contractAddress = process.env.ADDRESS_KEY;
+const contractAddress = import.meta.env.VITE_ADDRESS_KEY;
 
 export default function CreateItem() {
   const [contract, setContract] = useState(null);
