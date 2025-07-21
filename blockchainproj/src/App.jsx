@@ -11,7 +11,7 @@ function AppContent() {
   const hideNavbar = location.pathname === '/login';
 
   return (
-    <div className="section">
+    <div className="section" style={{ overflowY: "hidden" }}>
       <div className="container">
         {!hideNavbar && (
           <nav className="navbar has-shadow mb-5" role="navigation" aria-label="main navigation">
