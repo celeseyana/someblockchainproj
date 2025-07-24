@@ -8,13 +8,15 @@ import {
 } from "react-router-dom";
 import Home from "./Home";
 import Page2 from "./page2";
-import DisplayItems from "./page3";
+import Page3 from "./page3";
 import Page4 from "./page4";
 import LoginPage from "./Login";
+import SignUp from "./SignUp";
 
 function AppContent() {
   const location = useLocation();
-  const hideNavbar = location.pathname === "/login";
+  const hideNavbar =
+    location.pathname === "/login" || location.pathname === "/signup";
 
   return (
     <div className="section" style={{ overflowY: "hidden" }}>
@@ -58,7 +60,7 @@ function AppContent() {
                     to="/page3"
                     className="navbar-item has-text-weight-semibold has-text-light"
                   >
-                    View Item
+                    Page 3
                   </Link>
                   <Link
                     to="/page4"
@@ -75,8 +77,9 @@ function AppContent() {
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/login" element={<LoginPage />} />
+          <Route path="/signup" element={<SignUp />} />
           <Route path="/page2" element={<Page2 />} />
-          <Route path="/page3" element={<DisplayItems />} />
+          <Route path="/page3" element={<Page3 />} />
           <Route path="/page4" element={<Page4 />} />
         </Routes>
       </div>

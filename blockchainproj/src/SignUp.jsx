@@ -2,9 +2,11 @@ import "bulma/css/bulma.min.css";
 import { useState } from "react";
 import { Link } from "react-router-dom";
 
-export default function Login() {
+export default function Signup() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [role, setRole] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
   const handleSubmit = async (e) => {
@@ -12,9 +14,16 @@ export default function Login() {
     setIsLoading(true);
 
     try {
-      const requestBody = { username, password };
+      // Password confirmation validation
+      if (password !== confirmPassword) {
+        alert("Passwords do not match!");
+        setIsLoading(false);
+        return;
+      }
 
-      const response = await fetch(`http://localhost:8081/login`, {
+      const requestBody = { username, password, role };
+
+      const response = await fetch(`http://localhost:8081/signup`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -28,9 +37,13 @@ export default function Login() {
 
       if (response.ok) {
         alert(data.message);
-        console.log("User logged in:", data.user);
-        // You can redirect to dashboard or home page here
-        // window.location.href = '/dashboard';
+        // Clear form after successful signup
+        setUsername("");
+        setPassword("");
+        setConfirmPassword("");
+        setRole("");
+        // Optionally redirect to login page
+        // window.location.href = '/login';
       } else {
         alert(data.error);
       }
@@ -66,7 +79,7 @@ export default function Login() {
                   <div className="has-text-centered mb-5">
                     <h1 className="title is-3 has-text-white">FoodChain</h1>
                     <h2 className="has-text-grey-light has-text-weight-bold is-4">
-                      Login
+                      Register
                     </h2>
                   </div>
 
@@ -105,6 +118,45 @@ export default function Login() {
                       </div>
                     </div>
 
+                    <div className="field">
+                      <label className="label has-text-white">
+                        Confirm Password
+                      </label>
+                      <div className="control has-icons-left">
+                        <input
+                          className="input"
+                          type="password"
+                          placeholder="Confirm your password"
+                          value={confirmPassword}
+                          onChange={(e) => setConfirmPassword(e.target.value)}
+                          required
+                        />
+                        <span className="icon is-small is-left">
+                          <i className="fas fa-lock"></i>
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="field">
+                      <label className="label has-text-white">Role</label>
+                      <div className="control">
+                        <div className="select is-fullwidth">
+                          <select
+                            value={role}
+                            onChange={(e) => setRole(e.target.value)}
+                            required
+                          >
+                            <option value="" disabled>
+                              Select role
+                            </option>
+                            <option value="customer">Customer</option>
+                            <option value="manufacturer">Manufacturer</option>
+                            <option value="supplier">Supplier</option>
+                          </select>
+                        </div>
+                      </div>
+                    </div>
+
                     <div className="field mt-6">
                       <div className="control">
                         <button
@@ -113,7 +165,7 @@ export default function Login() {
                           }`}
                           disabled={isLoading}
                         >
-                          Sign In
+                          Sign Up
                         </button>
                       </div>
                     </div>
@@ -123,12 +175,12 @@ export default function Login() {
 
                   <div className="has-text-centered">
                     <p className="is-size-7 has-text-grey-light">
-                      New to FoodChain?{" "}
+                      Already have an account?{" "}
                       <Link
-                        to="/signup"
+                        to="/login"
                         className="has-text-info has-text-weight-semibold"
                       >
-                        Sign up
+                        Sign in
                       </Link>
                     </p>
                   </div>
