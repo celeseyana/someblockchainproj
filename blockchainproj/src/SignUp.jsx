@@ -21,19 +21,15 @@ export default function Signup() {
         return;
       }
 
-      const requestBody = { username, password, role };
-
       const response = await fetch(`http://localhost:8081/signup`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(requestBody),
       });
+      console.log(response);
 
       const data = await response.json();
-      console.log(response);
-      console.log(data);
 
       if (response.ok) {
         alert(data.message);
@@ -63,7 +59,7 @@ export default function Signup() {
       />
 
       <div className="hero is-fullheight">
-        <div className="hero-body">
+        <div className="hero-body body">
           <div className="container">
             <div className="columns is-centered">
               <div className="column is-5-tablet is-4-desktop is-3-widescreen">
@@ -137,7 +133,7 @@ export default function Signup() {
                       </div>
                     </div>
 
-                    <div className="field">
+                    <div className="field role">
                       <label className="label has-text-white">Role</label>
                       <div className="control">
                         <div className="select is-fullwidth">
@@ -160,6 +156,7 @@ export default function Signup() {
                     <div className="field mt-6">
                       <div className="control">
                         <button
+                          type="submit"
                           className={`button is-link is-fullwidth ${
                             isLoading ? "is-loading" : ""
                           }`}
