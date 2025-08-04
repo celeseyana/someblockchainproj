@@ -1,17 +1,12 @@
 import express from "express";
 import mysql from "mysql";
-import cors from "cors";
-const app = express();
-app.use(cors());
-app.use(express.json());
-app.use(
-  cors({
-    origin: ["http://localhost:5173"],
-    methods: ["POST, GET"],
-    credentials: true,
-  })
-);
 
+const app = express();
+
+// ✅ JSON parsing only — no CORS
+app.use(express.json());
+
+// ✅ Database connection
 const db = mysql.createConnection({
   host: "localhost",
   user: "root",
@@ -27,30 +22,31 @@ db.connect((err) => {
   console.log("Connected to database.");
 });
 
-// celes
+// ✅ Routes
 app.post("/signup", (req, res) => {
-  console.log(req.body);
+  console.log("Signup Body:", req.body);
   const sql = "INSERT INTO users (username, password, role) VALUES (?, ?, ?)";
   const values = [req.body.username, req.body.password, req.body.role];
   db.query(sql, values, (err, data) => {
-    if (err) return res.json(err);
-    return res.json(data);
+    if (err) return res.status(500).json(err);
+    return res
+      .status(200)
+      .json({ message: "Signup successful", userId: data.insertId });
   });
 });
 
-// celes
 app.post("/login", (req, res) => {
   const sql = "SELECT * FROM users WHERE username = ? AND password = ?";
   db.query(sql, [req.body.username, req.body.password], (err, data) => {
-    if (err) return res.json({ Message: "Server Side Error knock knock mf" });
+    if (err) return res.status(500).json({ message: "Server error" });
     if (data.length > 0) {
-      return res.json({ Status: "Success" });
+      return res.json({ status: "Success" });
     } else {
-      return res.json({ Message: "dawg u r not in here mane" });
+      return res.status(401).json({ message: "Invalid credentials" });
     }
   });
 });
 
-app.listen(8081, () => {
-  console.log("server running");
+app.listen(8080, () => {
+  console.log("Server running on http://localhost:8080");
 });

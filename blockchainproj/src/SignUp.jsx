@@ -21,11 +21,16 @@ export default function Signup() {
         return;
       }
 
-      const response = await fetch(`http://localhost:8081/signup`, {
+      const response = await fetch(`http://localhost:8080/signup`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
+        body: JSON.stringify({
+          username,
+          password,
+          role,
+        }),
       });
       console.log(response);
 
