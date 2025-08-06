@@ -24,12 +24,14 @@ export default function Login() {
 
       const data = await response.json();
 
-      if (response.ok) {
+      if (response.ok && data.user) {
+        localStorage.setItem("username", username);
+        localStorage.setItem("role", data.user.role);
         alert("Welcome back, " + username);
         // You can redirect to dashboard or home page here
-        window.location.href = '/';
+        window.location.href = "/";
       } else {
-        alert(data.error);
+        alert(data.message || "Login failed.");
       }
     } catch (error) {
       console.error("Error:", error);

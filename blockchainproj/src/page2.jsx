@@ -9,6 +9,7 @@ export default function CreateItem() {
   const [origin, setOrigin] = useState('');
   const [metadataURI, setMetadataURI] = useState('');
   const [txStatus, setTxStatus] = useState('');
+  const [userRole, setUserRole] = useState('');
 
   useEffect(() => {
     async function initContract() {
@@ -24,6 +25,9 @@ export default function CreateItem() {
         }
       }
     }
+
+    // Set user role from localStorage
+    setUserRole(localStorage.getItem('role'));
 
     initContract();
   }, []);
@@ -45,6 +49,15 @@ export default function CreateItem() {
       setTxStatus('❌ Error creating item');
     }
   };
+
+  if (userRole !== 'manufacturer') {
+    return (
+      <div className="box has-background-dark has-text-light mb-5">
+        <h2 className="title is-5">Create New Food Item</h2>
+        <p className="has-text-danger">Only manufacturers can create items.</p>
+      </div>
+    );
+  }
 
   return (
     <div className="box has-background-dark has-text-light mb-5">

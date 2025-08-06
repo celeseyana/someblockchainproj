@@ -9,6 +9,9 @@ export default function ItemList() {
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [selectedItem, setSelectedItem] = useState(null);
+  const [itemHistory, setItemHistory] = useState([]);
+  const [isHistoryModalActive, setIsHistoryModalActive] = useState(false);
 
   // State enum mapping for display
   const stateNames = {
@@ -139,6 +142,45 @@ export default function ItemList() {
     return `${address.slice(0, 6)}...${address.slice(-4)}`;
   };
 
+  const fetchItemHistory = async (itemId) => {
+    if (!contract) return;
+    
+    try {
+      setLoading(true);
+      
+      // Get past events for this item
+      const filter = contract.filters.StateChanged(itemId);
+      const events = await contract.queryFilter(filter, 0, 'latest');
+      
+      const history = await Promise.all(events.map(async (event) => {
+        const block = await event.getBlock();
+        return {
+          timestamp: new Date(block.timestamp * 1000).toLocaleString(),
+          state: stateNames[Number(event.args[1])],
+          changedBy: event.args[2],
+          blockNumber: event.blockNumber
+        };
+      }));
+      
+      // Sort by block number
+      history.sort((a, b) => a.blockNumber - b.blockNumber);
+      setItemHistory(history);
+      setIsHistoryModalActive(true);
+      
+    } catch (err) {
+      console.error('Error fetching item history:', err);
+      setError('Failed to fetch item history');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const closeHistoryModal = () => {
+    setIsHistoryModalActive(false);
+    setSelectedItem(null);
+    setItemHistory([]);
+  };
+
   if (loading) {
     return (
       <div className="box has-background-dark has-text-light">
@@ -176,7 +218,16 @@ export default function ItemList() {
                 <div className="card-content">
                   <div className="media">
                     <div className="media-content">
-                      <p className="title is-6 has-text-white">#{item.id} - {item.name}</p>
+                      <p 
+                        className="title is-6 has-text-white" 
+                        style={{ cursor: 'pointer' }}
+                        onClick={() => {
+                          setSelectedItem(item);
+                          fetchItemHistory(item.id);
+                        }}
+                      >
+                        #{item.id} - {item.name}
+                      </p>
                       <p className="subtitle is-7 has-text-grey">Origin: {item.origin}</p>
                     </div>
                     <div className="media-right">
@@ -219,6 +270,41 @@ export default function ItemList() {
           ))}
         </div>
       )}
+
+      {/* History Modal */}
+      <div className={`modal ${isHistoryModalActive ? 'is-active' : ''}`}>
+        <div className="modal-background" onClick={closeHistoryModal}></div>
+        <div className="modal-card">
+          <header className="modal-card-head has-background-dark">
+            <p className="modal-card-title has-text-white">
+              {selectedItem ? `${selectedItem.name} - History` : 'Product History'}
+            </p>
+            <button 
+              className="delete" 
+              aria-label="close" 
+              onClick={closeHistoryModal}
+            ></button>
+          </header>
+          <section className="modal-card-body has-background-grey-dark has-text-light">
+            {itemHistory.length === 0 ? (
+              <p>No history found for this item.</p>
+            ) : (
+              <div className="timeline">
+                {itemHistory.map((event, index) => (
+                  <div key={index} className="timeline-item">
+                    <div className="timeline-marker is-info"></div>
+                    <div className="timeline-content">
+                      <p className="heading">{event.timestamp}</p>
+                      <p>State changed to: <strong>{event.state}</strong></p>
+                      <p className="is-size-7">By: {truncateAddress(event.changedBy)}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </section>
+        </div>
+      </div>
     </div>
   );
 }

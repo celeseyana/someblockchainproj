@@ -14,6 +14,7 @@ contract FoodSupplyChain {
     }
 
     uint256 public itemCount;
+    uint256[] public itemIds;
     mapping(uint256 => FoodItem) public items;
 
     event StateChanged(uint256 indexed id, State state, address changedBy);
@@ -33,8 +34,12 @@ contract FoodSupplyChain {
             state: State.Harvested,
             metadataURI: _metadataURI
         });
-
+        itemIds.push(itemCount);
         emit StateChanged(itemCount, State.Harvested, msg.sender);
+    }
+
+    function getAllItemIds() public view returns (uint256[] memory) {
+        return itemIds;
     }
 
     function advanceState(uint256 _id) public onlyOwner(_id) {

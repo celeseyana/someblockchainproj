@@ -1,9 +1,9 @@
 import express from "express";
 import mysql from "mysql2";
 import cors from "cors";
+import bcrypt from "bcrypt";
 
 const app = express();
-const bcrypt = require("bcrypt");
 
 
 app.use(
@@ -14,10 +14,8 @@ app.use(
   })
 );
 
-// ✅ JSON parsing only — no CORS
 app.use(express.json());
 
-// ✅ Database connection
 const db = mysql.createConnection({
   host: "localhost",
   user: "root",
