@@ -27,10 +27,11 @@ export default function Login() {
       console.log(data);
 
       if (response.ok) {
-        alert(data.message);
+        alert("Welcome back, " + data.user);
         console.log("User logged in:", data.user);
+        localStorage.setItem("user", JSON.stringify(data.user)); 
         // You can redirect to dashboard or home page here
-        // window.location.href = '/dashboard';
+        window.location.href = '/';
       } else {
         alert(data.error);
       }

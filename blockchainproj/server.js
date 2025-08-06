@@ -1,7 +1,16 @@
 import express from "express";
-import mysql from "mysql";
+import mysql from "mysql2";
+import cors from "cors";
 
 const app = express();
+
+app.use(
+  cors({
+    origin: ["http://localhost:5173"], // allow React frontend
+    methods: ["GET", "POST", "PUT", "DELETE"],
+    credentials: false, // set to true only if using cookies/sessions
+  })
+);
 
 // ✅ JSON parsing only — no CORS
 app.use(express.json());
@@ -40,9 +49,16 @@ app.post("/login", (req, res) => {
   db.query(sql, [req.body.username, req.body.password], (err, data) => {
     if (err) return res.status(500).json({ message: "Server error" });
     if (data.length > 0) {
-      return res.json({ status: "Success" });
-    } else {
-      return res.status(401).json({ message: "Invalid credentials" });
+      const user = {
+        id: data[0].id,
+        username: data[0].username,
+        role: data[0].role,
+      };
+      return res.json({
+        status: "Success",
+        message: "Login successful",
+        user: user,
+      });
     }
   });
 });
