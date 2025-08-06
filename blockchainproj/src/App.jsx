@@ -60,7 +60,7 @@ function AppContent() {
                     to="/page3"
                     className="navbar-item has-text-weight-semibold has-text-light"
                   >
-                    Page 3
+                    Transfer Ownership
                   </Link>
                   <Link
                     to="/page4"

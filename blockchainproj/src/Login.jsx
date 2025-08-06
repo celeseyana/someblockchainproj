@@ -23,13 +23,9 @@ export default function Login() {
       });
 
       const data = await response.json();
-      console.log(response);
-      console.log(data);
 
       if (response.ok) {
-        alert("Welcome back, " + data.user);
-        console.log("User logged in:", data.user);
-        localStorage.setItem("user", JSON.stringify(data.user)); 
+        alert("Welcome back, " + username);
         // You can redirect to dashboard or home page here
         window.location.href = '/';
       } else {
