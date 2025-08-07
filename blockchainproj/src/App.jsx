@@ -9,7 +9,6 @@ import {
 import Home from "./Home";
 import Page2 from "./page2";
 import Page3 from "./page3";
-import Page4 from "./page4";
 import LoginPage from "./Login";
 import SignUp from "./SignUp";
 
@@ -60,14 +59,9 @@ function AppContent() {
                     to="/page3"
                     className="navbar-item has-text-weight-semibold has-text-light"
                   >
-                    Transfer Ownership
+                    View Items
                   </Link>
-                  <Link
-                    to="/page4"
-                    className="navbar-item has-text-weight-semibold has-text-light"
-                  >
-                    Page 4
-                  </Link>
+        
                 </div>
               </div>
             </div>
@@ -80,7 +74,6 @@ function AppContent() {
           <Route path="/signup" element={<SignUp />} />
           <Route path="/page2" element={<Page2 />} />
           <Route path="/page3" element={<Page3 />} />
-          <Route path="/page4" element={<Page4 />} />
         </Routes>
       </div>
     </div>

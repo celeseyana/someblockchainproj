@@ -55,4 +55,16 @@ contract FoodSupplyChain {
     function getItem(uint256 _id) public view returns (FoodItem memory) {
         return items[_id];
     }
+
+    function rejectItem(uint256 _id) public onlyOwner(_id) {
+        require(_id > 0 && _id <= itemCount, "Item does not exist");
+        require(items[_id].currentOwner != address(0), "Item has been deleted");
+        require(uint8(items[_id].state) > uint8(State.Harvested), "Cannot reject from Harvested state");
+        
+        State currentState = items[_id].state;
+        State previousState = State(uint8(currentState) - 1);
+        
+        items[_id].state = previousState;
+        emit StateChanged(_id, previousState, msg.sender);
+    }
 }

@@ -102,6 +102,44 @@ export default function ItemList() {
     fetchItems();
   }, [contract]);
 
+  const handleRejectItem = async (itemId) => {
+    if (!contract) return;
+    
+    try {
+      const tx = await contract.rejectItem(itemId);
+      setLoading(true);
+      await tx.wait();
+      await refreshItems();
+    } catch (err) {
+      console.error('Error rejecting item:', err);
+      setError('Failed to reject item');
+      setLoading(false);
+    }
+  };
+
+  const refreshItems = async () => {
+    const itemCount = await contract.itemCount();
+    const itemCountNum = Number(itemCount);
+    
+    const itemPromises = [];
+    for (let i = 1; i <= itemCountNum; i++) {
+      itemPromises.push(contract.getItem(i));
+    }
+    
+    const fetchedItems = await Promise.all(itemPromises);
+    const formattedItems = fetchedItems.map((item) => ({
+      id: Number(item.id),
+      name: item.name,
+      origin: item.origin,
+      currentOwner: item.currentOwner,
+      state: Number(item.state),
+      metadataURI: item.metadataURI
+    }));
+    
+    setItems(formattedItems);
+    setLoading(false);
+  };
+
   const handleAdvanceState = async (itemId) => {
     if (!contract) return;
     
@@ -119,18 +157,7 @@ export default function ItemList() {
         itemPromises.push(contract.getItem(i));
       }
       
-      const fetchedItems = await Promise.all(itemPromises);
-      const formattedItems = fetchedItems.map((item) => ({
-        id: Number(item.id),
-        name: item.name,
-        origin: item.origin,
-        currentOwner: item.currentOwner,
-        state: Number(item.state),
-        metadataURI: item.metadataURI
-      }));
-      
-      setItems(formattedItems);
-      setLoading(false);
+      await refreshItems();
     } catch (err) {
       console.error('Error advancing state:', err);
       setError('Failed to advance item state');
@@ -251,8 +278,8 @@ export default function ItemList() {
                       </p>
                     )}
                     
-                    {item.state < 5 && (
-                      <div className="field is-grouped mt-3">
+                    <div className="field is-grouped mt-3">
+                      {item.state < 5 && (
                         <div className="control">
                           <button 
                             className="button is-small is-primary"
@@ -261,8 +288,18 @@ export default function ItemList() {
                             Advance to {stateNames[item.state + 1]}
                           </button>
                         </div>
-                      </div>
-                    )}
+                      )}
+                      {item.state > 0 && (
+                        <div className="control">
+                          <button 
+                            className="button is-small is-danger"
+                            onClick={() => handleRejectItem(item.id)}
+                          >
+                            Reject to {stateNames[item.state - 1]}
+                          </button>
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </div>
               </div>
