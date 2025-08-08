@@ -11,20 +11,21 @@ contract FoodSupplyChain {
         address currentOwner;
         State state;
         string metadataURI;
+        string username;  // Added username field
     }
 
     uint256 public itemCount;
     uint256[] public itemIds;
     mapping(uint256 => FoodItem) public items;
 
-    event StateChanged(uint256 indexed id, State state, address changedBy);
+    event StateChanged(uint256 indexed id, State state, address changedBy, string username);
 
     modifier onlyOwner(uint256 _id) {
         require(msg.sender == items[_id].currentOwner, "Not authorized");
         _;
     }
 
-    function createItem(string memory _name, string memory _origin, string memory _metadataURI) public {
+    function createItem(string memory _name, string memory _origin, string memory _metadataURI, string memory _username) public {
         itemCount++;
         items[itemCount] = FoodItem({
             id: itemCount,
@@ -32,20 +33,21 @@ contract FoodSupplyChain {
             origin: _origin,
             currentOwner: msg.sender,
             state: State.Harvested,
-            metadataURI: _metadataURI
+            metadataURI: _metadataURI,
+            username: _username
         });
         itemIds.push(itemCount);
-        emit StateChanged(itemCount, State.Harvested, msg.sender);
+        emit StateChanged(itemCount, State.Harvested, msg.sender, _username);
     }
 
     function getAllItemIds() public view returns (uint256[] memory) {
         return itemIds;
     }
 
-    function advanceState(uint256 _id) public onlyOwner(_id) {
+    function advanceState(uint256 _id, string memory _username) public onlyOwner(_id) {
         require(uint8(items[_id].state) < uint8(State.Sold), "Already sold");
         items[_id].state = State(uint8(items[_id].state) + 1);
-        emit StateChanged(_id, items[_id].state, msg.sender);
+        emit StateChanged(_id, items[_id].state, msg.sender, _username);
     }
 
     function transferOwnership(uint256 _id, address _newOwner) public onlyOwner(_id) {
@@ -56,7 +58,7 @@ contract FoodSupplyChain {
         return items[_id];
     }
 
-    function rejectItem(uint256 _id) public onlyOwner(_id) {
+    function rejectItem(uint256 _id, string memory _username) public onlyOwner(_id) {
         require(_id > 0 && _id <= itemCount, "Item does not exist");
         require(items[_id].currentOwner != address(0), "Item has been deleted");
         require(uint8(items[_id].state) > uint8(State.Harvested), "Cannot reject from Harvested state");
@@ -65,6 +67,6 @@ contract FoodSupplyChain {
         State previousState = State(uint8(currentState) - 1);
         
         items[_id].state = previousState;
-        emit StateChanged(_id, previousState, msg.sender);
+        emit StateChanged(_id, previousState, msg.sender, _username);
     }
 }

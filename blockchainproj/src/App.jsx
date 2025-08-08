@@ -16,15 +16,17 @@ function AppContent() {
   const location = useLocation();
   const hideNavbar =
     location.pathname === "/login" || location.pathname === "/signup";
+  const username = localStorage.getItem('username');
 
   return (
     <div className="section" style={{ overflowY: "hidden" }}>
       <div className="container">
         {!hideNavbar && (
           <nav
-            className="navbar has-shadow mb-5"
+            className="navbar has-shadow mb-5 is-dark"
             role="navigation"
             aria-label="main navigation"
+            style={{ backgroundColor: "#1a1a1a" }}
           >
             <div
               className="container is-fluid"
@@ -61,7 +63,23 @@ function AppContent() {
                   >
                     View Items
                   </Link>
-        
+                </div>
+                <div className="navbar-end">
+                  <div className="navbar-item">
+                    <span className="has-text-grey-light mr-4">
+                      Signed in as {username ? username.charAt(0).toUpperCase() + username.slice(1) : ''}
+                    </span>
+                    <button
+                      className="button is-danger"
+                      onClick={() => {
+                        localStorage.removeItem('userRole');
+                        localStorage.removeItem('userAddress');
+                        window.location.href = '/login';
+                      }}
+                    >
+                      Sign Out
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>

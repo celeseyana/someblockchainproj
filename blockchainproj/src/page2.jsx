@@ -37,7 +37,8 @@ export default function CreateItem() {
     if (!contract) return;
 
     try {
-      const tx = await contract.createItem(name, origin, metadataURI);
+      const username = localStorage.getItem('username') || 'Unknown User';
+      const tx = await contract.createItem(name, origin, metadataURI, username);
       setTxStatus('⏳ Transaction sent... Waiting for confirmation');
       await tx.wait();
       setTxStatus('✅ Item created successfully!');

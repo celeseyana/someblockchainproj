@@ -1,6 +1,6 @@
-import { useEffect, useState } from 'react';
-import { ethers } from 'ethers';
-import FoodSupplyChain from '../artifacts/contracts/FoodSupplyChain.sol/FoodSupplyChain.json';
+import { useEffect, useState } from "react";
+import { ethers } from "ethers";
+import FoodSupplyChain from "../artifacts/contracts/FoodSupplyChain.sol/FoodSupplyChain.json";
 
 const contractAddress = import.meta.env.VITE_ADDRESS_KEY;
 
@@ -8,63 +8,73 @@ export default function ItemList() {
   const [contract, setContract] = useState(null);
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
   const [selectedItem, setSelectedItem] = useState(null);
   const [itemHistory, setItemHistory] = useState([]);
   const [isHistoryModalActive, setIsHistoryModalActive] = useState(false);
+  const [userRole, setUserRole] = useState("");
 
   // State enum mapping for display
   const stateNames = {
-    0: 'Harvested',
-    1: 'Processed', 
-    2: 'Packed',
-    3: 'Shipped',
-    4: 'Received',
-    5: 'Sold'
+    0: "Harvested",
+    1: "Processed",
+    2: "Packed",
+    3: "Shipped",
+    4: "Received",
+    5: "Sold",
   };
 
   const stateColors = {
-    0: 'is-success',
-    1: 'is-info',
-    2: 'is-warning', 
-    3: 'is-primary',
-    4: 'is-link',
-    5: 'is-dark'
+    0: "is-success",
+    1: "is-info",
+    2: "is-warning",
+    3: "is-primary",
+    4: "is-link",
+    5: "is-dark",
   };
 
   useEffect(() => {
     async function initContract() {
       if (window.ethereum) {
         try {
-          await window.ethereum.request({ method: 'eth_requestAccounts' });
+          await window.ethereum.request({ method: "eth_requestAccounts" });
           const provider = new ethers.BrowserProvider(window.ethereum);
           const signer = await provider.getSigner();
-          const foodContract = new ethers.Contract(contractAddress, FoodSupplyChain.abi, signer);
+          const foodContract = new ethers.Contract(
+            contractAddress,
+            FoodSupplyChain.abi,
+            signer
+          );
           setContract(foodContract);
         } catch (error) {
-          console.error('Error connecting to contract:', error);
-          setError('Failed to connect to contract');
+          console.error("Error connecting to contract:", error);
+          setError("Failed to connect to contract");
           setLoading(false);
         }
       } else {
-        setError('MetaMask not detected');
+        setError("MetaMask not detected");
         setLoading(false);
       }
     }
     initContract();
   }, []);
 
+  // Get user role on component mount
+  useEffect(() => {
+    setUserRole(localStorage.getItem("role"));
+  }, []);
+
   useEffect(() => {
     async function fetchItems() {
       if (!contract) return;
-      
+
       try {
         setLoading(true);
-        
+
         // Get total item count
         const itemCount = await contract.itemCount();
         const itemCountNum = Number(itemCount);
-        
+
         if (itemCountNum === 0) {
           setItems([]);
           setLoading(false);
@@ -76,9 +86,9 @@ export default function ItemList() {
         for (let i = 1; i <= itemCountNum; i++) {
           itemPromises.push(contract.getItem(i));
         }
-        
+
         const fetchedItems = await Promise.all(itemPromises);
-        
+
         // Format items for display
         const formattedItems = fetchedItems.map((item, index) => ({
           id: Number(item.id),
@@ -86,14 +96,14 @@ export default function ItemList() {
           origin: item.origin,
           currentOwner: item.currentOwner,
           state: Number(item.state),
-          metadataURI: item.metadataURI
+          metadataURI: item.metadataURI,
         }));
-        
+
         setItems(formattedItems);
-        setError('');
+        setError("");
       } catch (err) {
-        console.error('Error fetching items:', err);
-        setError('Failed to fetch items from blockchain');
+        console.error("Error fetching items:", err);
+        setError("Failed to fetch items from blockchain");
       } finally {
         setLoading(false);
       }
@@ -104,15 +114,16 @@ export default function ItemList() {
 
   const handleRejectItem = async (itemId) => {
     if (!contract) return;
-    
+
     try {
-      const tx = await contract.rejectItem(itemId);
+      const username = localStorage.getItem('username') || 'Unknown User';
+      const tx = await contract.rejectItem(itemId, username);
       setLoading(true);
       await tx.wait();
       await refreshItems();
     } catch (err) {
-      console.error('Error rejecting item:', err);
-      setError('Failed to reject item');
+      console.error("Error rejecting item:", err);
+      setError("Failed to reject item");
       setLoading(false);
     }
   };
@@ -120,12 +131,12 @@ export default function ItemList() {
   const refreshItems = async () => {
     const itemCount = await contract.itemCount();
     const itemCountNum = Number(itemCount);
-    
+
     const itemPromises = [];
     for (let i = 1; i <= itemCountNum; i++) {
       itemPromises.push(contract.getItem(i));
     }
-    
+
     const fetchedItems = await Promise.all(itemPromises);
     const formattedItems = fetchedItems.map((item) => ({
       id: Number(item.id),
@@ -133,34 +144,35 @@ export default function ItemList() {
       origin: item.origin,
       currentOwner: item.currentOwner,
       state: Number(item.state),
-      metadataURI: item.metadataURI
+      metadataURI: item.metadataURI,
     }));
-    
+
     setItems(formattedItems);
     setLoading(false);
   };
 
   const handleAdvanceState = async (itemId) => {
     if (!contract) return;
-    
+
     try {
-      const tx = await contract.advanceState(itemId);
+      const username = localStorage.getItem('username') || 'Unknown User';
+      const tx = await contract.advanceState(itemId, username);
       setLoading(true);
       await tx.wait();
-      
+
       // Refresh items after state change
       const itemCount = await contract.itemCount();
       const itemCountNum = Number(itemCount);
-      
+
       const itemPromises = [];
       for (let i = 1; i <= itemCountNum; i++) {
         itemPromises.push(contract.getItem(i));
       }
-      
+
       await refreshItems();
     } catch (err) {
-      console.error('Error advancing state:', err);
-      setError('Failed to advance item state');
+      console.error("Error advancing state:", err);
+      setError("Failed to advance item state");
       setLoading(false);
     }
   };
@@ -171,32 +183,34 @@ export default function ItemList() {
 
   const fetchItemHistory = async (itemId) => {
     if (!contract) return;
-    
+
     try {
       setLoading(true);
-      
+
       // Get past events for this item
       const filter = contract.filters.StateChanged(itemId);
-      const events = await contract.queryFilter(filter, 0, 'latest');
-      
-      const history = await Promise.all(events.map(async (event) => {
-        const block = await event.getBlock();
-        return {
-          timestamp: new Date(block.timestamp * 1000).toLocaleString(),
-          state: stateNames[Number(event.args[1])],
-          changedBy: event.args[2],
-          blockNumber: event.blockNumber
-        };
-      }));
-      
+      const events = await contract.queryFilter(filter, 0, "latest");
+
+      const history = await Promise.all(
+        events.map(async (event) => {
+          const block = await event.getBlock();
+          return {
+            timestamp: new Date(block.timestamp * 1000).toLocaleString(),
+            state: stateNames[Number(event.args[1])],
+            changedBy: event.args[2],
+            username: event.args[3], // Get username from the event
+            blockNumber: event.blockNumber,
+          };
+        })
+      );
+
       // Sort by block number
       history.sort((a, b) => a.blockNumber - b.blockNumber);
       setItemHistory(history);
       setIsHistoryModalActive(true);
-      
     } catch (err) {
-      console.error('Error fetching item history:', err);
-      setError('Failed to fetch item history');
+      console.error("Error fetching item history:", err);
+      setError("Failed to fetch item history");
     } finally {
       setLoading(false);
     }
@@ -234,9 +248,11 @@ export default function ItemList() {
   return (
     <div className="box has-background-dark has-text-light">
       <h2 className="title is-5 has-text-white">Food Supply Chain Items</h2>
-      
+
       {items.length === 0 ? (
-        <p className="has-text-grey">No items created yet. Create your first item to see it here!</p>
+        <p className="has-text-grey">
+          No items created yet. Create your first item to see it here!
+        </p>
       ) : (
         <div className="columns is-multiline">
           {items.map((item) => (
@@ -245,9 +261,9 @@ export default function ItemList() {
                 <div className="card-content">
                   <div className="media">
                     <div className="media-content">
-                      <p 
-                        className="title is-6 has-text-white" 
-                        style={{ cursor: 'pointer' }}
+                      <p
+                        className="title is-6 has-text-white"
+                        style={{ cursor: "pointer" }}
                         onClick={() => {
                           setSelectedItem(item);
                           fetchItemHistory(item.id);
@@ -255,7 +271,9 @@ export default function ItemList() {
                       >
                         #{item.id} - {item.name}
                       </p>
-                      <p className="subtitle is-7 has-text-grey">Origin: {item.origin}</p>
+                      <p className="subtitle is-7 has-text-grey">
+                        Origin: {item.origin}
+                      </p>
                     </div>
                     <div className="media-right">
                       <span className={`tag ${stateColors[item.state]}`}>
@@ -263,35 +281,72 @@ export default function ItemList() {
                       </span>
                     </div>
                   </div>
-                  
+
                   <div className="content">
                     <p className="is-size-7 has-text-grey">
-                      <strong>Owner:</strong> {truncateAddress(item.currentOwner)}
+                      <strong>Owner:</strong>{" "}
+                      {truncateAddress(item.currentOwner)}
                     </p>
-                    
+
                     {item.metadataURI && (
                       <p className="is-size-7 has-text-grey">
-                        <strong>Metadata:</strong> 
-                        <a href={item.metadataURI} target="_blank" rel="noopener noreferrer" className="has-text-link">
+                        <strong>Metadata:</strong>
+                        <a
+                          href={item.metadataURI}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="has-text-link"
+                        >
                           View Metadata
                         </a>
                       </p>
                     )}
-                    
+
                     <div className="field is-grouped mt-3">
-                      {item.state < 5 && (
+                      {/* Manufacturer can only advance from Harvested to Processed */}
+                      {userRole === "manufacturer" && item.state === 0 && (
                         <div className="control">
-                          <button 
+                          <button
                             className="button is-small is-primary"
                             onClick={() => handleAdvanceState(item.id)}
                           >
-                            Advance to {stateNames[item.state + 1]}
+                            Process Item
                           </button>
                         </div>
                       )}
-                      {item.state > 0 && (
+                      
+                      {/* Supplier can advance from Processed to Packed, Packed to Shipped, and Shipped to Received */}
+                      {userRole === "supplier" && (item.state >= 1 && item.state <= 3) && (
                         <div className="control">
-                          <button 
+                          <button
+                            className="button is-small is-primary"
+                            onClick={() => handleAdvanceState(item.id)}
+                          >
+                            {item.state === 1 ? "Pack Item" : 
+                             item.state === 2 ? "Ship Item" : 
+                             "Mark as Received"}
+                          </button>
+                        </div>
+                      )}
+                      
+                      {/* Customer can only advance from Received to Sold */}
+                      {userRole === "customer" && item.state === 4 && (
+                        <div className="control">
+                          <button
+                            className="button is-small is-primary"
+                            onClick={() => handleAdvanceState(item.id)}
+                          >
+                            Mark as Sold
+                          </button>
+                        </div>
+                      )}
+                      
+                      {/* Show reject button based on role and state */}
+                      {((userRole === "manufacturer" && item.state === 1) ||
+                        (userRole === "supplier" && item.state > 1 && item.state <= 4) ||
+                        (userRole === "customer" && item.state === 5)) && (
+                        <div className="control">
+                          <button
                             className="button is-small is-danger"
                             onClick={() => handleRejectItem(item.id)}
                           >
@@ -309,16 +364,18 @@ export default function ItemList() {
       )}
 
       {/* History Modal */}
-      <div className={`modal ${isHistoryModalActive ? 'is-active' : ''}`}>
+      <div className={`modal ${isHistoryModalActive ? "is-active" : ""}`}>
         <div className="modal-background" onClick={closeHistoryModal}></div>
         <div className="modal-card">
           <header className="modal-card-head has-background-dark">
             <p className="modal-card-title has-text-white">
-              {selectedItem ? `${selectedItem.name} - History` : 'Product History'}
+              {selectedItem
+                ? `${selectedItem.name} - History`
+                : "Product History"}
             </p>
-            <button 
-              className="delete" 
-              aria-label="close" 
+            <button
+              className="delete"
+              aria-label="close"
               onClick={closeHistoryModal}
             ></button>
           </header>
@@ -332,8 +389,16 @@ export default function ItemList() {
                     <div className="timeline-marker is-info"></div>
                     <div className="timeline-content">
                       <p className="heading">{event.timestamp}</p>
-                      <p>State changed to: <strong>{event.state}</strong></p>
-                      <p className="is-size-7">By: {truncateAddress(event.changedBy)}</p>
+                      <p>
+                        <strong>
+                          {event.username || truncateAddress(event.changedBy)}
+                        </strong>
+                        {event.state === "Harvested"
+                          ? " created this item"
+                          : event.state.toLowerCase().includes("reject")
+                          ? ` rejected the item back to ${event.state}`
+                          : ` advanced the item to ${event.state}`}
+                      </p>
                     </div>
                   </div>
                 ))}

@@ -117,62 +117,64 @@ export default function App() {
               <ul>
                 {results.map(item => (
                   <li key={item.id}>
-                    <strong>{item.name}</strong> (Lot: {item.lot}, Origin: {item.origin})
+                    <strong>{item.name}</strong> (Origin: {item.origin})
                   </li>
                 ))}
               </ul>
             </div>
 
             <div className="box mb-5">
-              <p className="has-text-grey-light">[Timeline Visualization Placeholder]</p>
+              <h2 className="title is-6 mb-4">Supply Chain Progress</h2>
+              {results.map(item => (
+                <div key={item.id} className="mb-5">
+                  <p className="mb-2"><strong>{item.name}</strong> - Current State: <span className="tag is-info">{item.state}</span></p>
+                  <div className="is-flex" style={{ position: 'relative' }}>
+                    {['Harvested', 'Processed', 'Packed', 'Shipped', 'Received', 'Sold'].map((state, index) => {
+                      const isCompleted = ['Harvested', 'Processed', 'Packed', 'Shipped', 'Received', 'Sold']
+                        .indexOf(item.state) >= index;
+                      const isCurrent = item.state === state;
+                      
+                      return (
+                        <div 
+                          key={state} 
+                          className="is-flex is-flex-direction-column is-align-items-center" 
+                          style={{ flex: 1, position: 'relative' }}
+                        >
+                          <div 
+                            className={`circle ${isCompleted ? 'has-background-success' : 'has-background-grey-light'} 
+                              ${isCurrent ? 'is-current' : ''}`}
+                            style={{
+                              width: '20px',
+                              height: '20px',
+                              borderRadius: '50%',
+                              marginBottom: '8px',
+                              zIndex: 1,
+                              border: isCurrent ? '3px solid #3298dc' : 'none'
+                            }}
+                          />
+                          <p className="is-size-7 has-text-centered" style={{ maxWidth: '80px' }}>{state}</p>
+                          {index < 5 && (
+                            <div 
+                              className={isCompleted ? 'has-background-success' : 'has-background-grey-light'}
+                              style={{
+                                position: 'absolute',
+                                height: '2px',
+                                top: '9px',
+                                left: '50%',
+                                right: '-50%',
+                                zIndex: 0
+                              }}
+                            />
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              ))}
             </div>
 
-            <div className="columns is-multiline">
-              <div className="column is-one-quarter">
-                <div className="box">
-                  <p className="title is-5">Producers</p>
-                  <p className="subtitle is-6">26</p>
-                  <p className="has-text-grey">Bulk unwashed kale</p>
-                  <p className="has-text-grey-light is-size-7">10 Farms</p>
-                </div>
-              </div>
-
-              <div className="column is-one-quarter">
-                <div className="box">
-                  <p className="title is-5">Packing House</p>
-                  <p className="subtitle is-6">6</p>
-                  <p className="has-text-grey">Fresh Produce Inc.</p>
-                  <p className="has-text-grey-light is-size-7">Baby kale 50 lbs</p>
-                </div>
-              </div>
-
-              <div className="column is-one-quarter">
-                <div className="box">
-                  <p className="title is-5">Manufacturing Plant</p>
-                  <p className="subtitle is-6">2</p>
-                  <p className="has-text-grey">Mesclun salad mix</p>
-                  <p className="has-text-grey-light is-size-7">2 plants</p>
-                </div>
-              </div>
-
-              <div className="column is-one-quarter">
-                <div className="box">
-                  <p className="title is-5">Distribution Center</p>
-                  <p className="subtitle is-6">10</p>
-                  <p className="has-text-grey">Super Store Inc.</p>
-                  <p className="has-text-grey-light is-size-7">5 DCs</p>
-                </div>
-              </div>
-
-              <div className="column is-one-quarter">
-                <div className="box">
-                  <p className="title is-5">Store</p>
-                  <p className="subtitle is-6">356</p>
-                  <p className="has-text-grey">Super Store Inc.</p>
-                  <p className="has-text-grey-light is-size-7">234 Stores</p>
-                </div>
-              </div>
-            </div>
+            
           </>
         )}
       </div>
