@@ -17,6 +17,7 @@ Built with React, Hardhat, Solidity, Express, and MySQL.
 - [npm](https://www.npmjs.com/)
 - [MySQL](https://www.mysql.com/) server running locally
 - [MetaMask](https://metamask.io/) browser extension
+- [Wampserver](https://sourceforge.net/projects/wampserver/) local server host
 
 ## Setup Instructions
 
@@ -30,7 +31,8 @@ cd blockchainproj
 ### 2. Install Dependencies
 
 ```sh
-npm install
+npm install vite
+npm install -save-dev hardhat
 ```
 
 ### 3. Setup MySQL Database
@@ -55,7 +57,7 @@ CREATE TABLE users (
 ### 4. Compile and Deploy Smart Contracts
 
 ```sh
-npx hardhat compile
+npx hardhat node
 npx hardhat run scripts/deploy.js --network localhost
 ```
 
@@ -98,10 +100,8 @@ npm run dev
 
 ## Troubleshooting
 
+- Ensure Wampserver is turned on.
 - Ensure MySQL is running and credentials are correct.
 - Make sure MetaMask is connected to the correct local network.
 - If you redeploy contracts, update the address in `.env`.
 
-## License
-
-MIT
